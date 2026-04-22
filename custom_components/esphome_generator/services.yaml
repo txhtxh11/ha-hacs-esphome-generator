@@ -1,0 +1,14 @@
+generate_yaml:
+  name: Generate ESPHome YAML
+  description: Generate ESPHome YAML configuration
+  fields:
+    device_name:
+      name: Device Name
+      description: Name of the ESP device
+      example: "esp_device"
+      default: "esp_device"
+    board:
+      name: Board Type
+      description: Type of ESP board
+      example: "esp32"
+      default: "esp32"
