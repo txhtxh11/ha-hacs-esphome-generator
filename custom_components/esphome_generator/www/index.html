@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>ESP+HOMEKIT生成 - TXH</title>
 <style>
-    /* ---------- 主题变量 (与之前相同，为节省篇幅已省略，请自行复制前面的完整样式) ---------- */
+    /* ---------- 主题变量 (与之前完全相同) ---------- */
     :root {
         --bg-body: #000;
         --bg-panel: #0b0d10;
@@ -58,69 +58,31 @@
         --title-gradient: linear-gradient(135deg, #1e293b, #3b82f6);
         --link-color: var(--text-primary);
     }
-    [data-theme="light"] .title,
-    [data-theme="light"] .yaml-title {
-        background: var(--title-gradient);
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-    [data-theme="light"] .panel-header {
-        color: #1e293b;
-    }
-    [data-theme="light"] .badge {
-        background: #dbeafe;
-        color: #1e40af;
-    }
-    [data-theme="light"] .badge-off {
-        background: #fee2e2;
-        color: #b91c1c;
-    }
-    @media (prefers-color-scheme: light) {
-        [data-theme="auto"] {
-            --bg-body: #f5f7fa;
-            --bg-panel: #ffffff;
-            --bg-card: #f0f2f5;
-            --bg-header: #e9ecef;
-            --border: #d1d5db;
-            --border-light: #e2e6ea;
-            --text-primary: #1e293b;
-            --text-secondary: #475569;
-            --text-muted: #64748b;
-            --input-bg: #ffffff;
-            --input-border: #cbd5e1;
-            --input-focus: #3b82f6;
-            --btn-bg: #e2e8f0;
-            --btn-border: #cbd5e1;
-            --btn-hover: #cbd5e1;
-            --pre-bg: #f8fafc;
-            --pre-border: #e2e8f0;
-            --badge-bg: #dbeafe;
-            --badge-off-bg: #fee2e2;
-            --del-border: #f87171;
-            --del-color: #b91c1c;
-            --del-hover-bg: #fee2e2;
-            --title-gradient: linear-gradient(135deg, #1e293b, #3b82f6);
-            --link-color: var(--text-primary);
-        }
-        [data-theme="auto"] .title,
-        [data-theme="auto"] .yaml-title {
-            background: var(--title-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        [data-theme="auto"] .panel-header {
-            color: #1e293b;
-        }
-        [data-theme="auto"] .badge {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        [data-theme="auto"] .badge-off {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
+    [data-theme="auto"] {
+        --bg-body: #f5f7fa;
+        --bg-panel: #ffffff;
+        --bg-card: #f0f2f5;
+        --bg-header: #e9ecef;
+        --border: #d1d5db;
+        --border-light: #e2e6ea;
+        --text-primary: #1e293b;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        --input-bg: #ffffff;
+        --input-border: #cbd5e1;
+        --input-focus: #3b82f6;
+        --btn-bg: #e2e8f0;
+        --btn-border: #cbd5e1;
+        --btn-hover: #cbd5e1;
+        --pre-bg: #f8fafc;
+        --pre-border: #e2e8f0;
+        --badge-bg: #dbeafe;
+        --badge-off-bg: #fee2e2;
+        --del-border: #f87171;
+        --del-color: #b91c1c;
+        --del-hover-bg: #fee2e2;
+        --title-gradient: linear-gradient(135deg, #1e293b, #3b82f6);
+        --link-color: var(--text-primary);
     }
     * { box-sizing: border-box; }
     body { 
@@ -371,7 +333,17 @@
         padding: 2px 6px;
     }
     .edit-icon:hover { opacity: 1; background: var(--btn-hover); }
-    .info-note { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: left; }
+    .info-note { 
+        font-size: 11px; 
+        color: var(--text-muted); 
+        margin-top: 6px; 
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
     .helper-text { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
     .time-input-group { display: flex; gap: 8px; align-items: center; }
     .never-btn {
@@ -389,6 +361,40 @@
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 8px; }
     ::-webkit-scrollbar-thumb { background: var(--input-border); border-radius: 8px; }
+    .plain-btn {
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
+        color: var(--text-primary);
+        padding: 4px 12px;
+        font-size: 11px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+    }
+    .plain-btn:hover {
+        background: var(--btn-hover);
+        border-color: var(--input-focus);
+    }
+    /* 下拉菜单样式 */
+    .cmpower-select {
+        background: var(--btn-bg);
+        border: 1px solid var(--btn-border);
+        color: var(--text-primary);
+        padding: 4px 12px;
+        font-size: 11px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-family: system-ui, monospace;
+        outline: none;
+        transition: 0.2s;
+        width: auto;
+        min-width: 110px;
+    }
+    .cmpower-select:hover {
+        background: var(--btn-hover);
+        border-color: var(--input-focus);
+    }
 </style>
 </head>
 <body data-theme="dark">
@@ -409,7 +415,7 @@
         </div>
         
         <div class="form-area">
-            <!-- 设备基础面板 (内容同之前) -->
+            <!-- 设备基础面板 -->
             <div class="panel" id="panelDevice">
                 <div class="panel-header" onclick="togglePanel('deviceContent')">设备基础</div>
                 <div id="deviceContent" class="panel-content">
@@ -433,7 +439,7 @@
                 </div>
             </div>
 
-            <!-- WiFi配置面板 (内容同之前) -->
+            <!-- WiFi配置面板 -->
             <div class="panel" id="panelWifi">
                 <div class="panel-header" onclick="togglePanel('wifiContent')">WiFi配置</div>
                 <div id="wifiContent" class="panel-content">
@@ -447,7 +453,7 @@
                 </div>
             </div>
 
-            <!-- 核心服务面板 (内容同之前) -->
+            <!-- 核心服务面板 -->
             <div class="panel" id="panelCore">
                 <div class="panel-header" onclick="togglePanel('coreContent')">核心服务</div>
                 <div id="coreContent" class="panel-content">
@@ -460,7 +466,7 @@
                 </div>
             </div>
 
-            <!-- 控制器管理面板 (内容同之前) -->
+            <!-- 控制器管理面板 -->
             <div class="panel" id="panelMultiCtrl">
                 <div class="panel-header" onclick="togglePanel('multiCtrlContent')">控制器管理</div>
                 <div id="multiCtrlContent" class="panel-content">
@@ -474,7 +480,7 @@
                 </div>
             </div>
 
-            <!-- 物理按键面板 (内容同之前) -->
+            <!-- 物理按键面板 -->
             <div class="panel" id="panelMultiBtn">
                 <div class="panel-header" onclick="togglePanel('multiBtnContent')">物理按键</div>
                 <div id="multiBtnContent" class="panel-content">
@@ -491,7 +497,7 @@
                 </div>
             </div>
 
-            <!-- HomeKit配置面板 (内容同之前) -->
+            <!-- HomeKit配置面板 -->
             <div class="panel" id="panelHomekit">
                 <div class="panel-header" onclick="togglePanel('hkContent')">HomeKit配置</div>
                 <div id="hkContent" class="panel-content">
@@ -503,18 +509,18 @@
                 </div>
             </div>
 
-            <!-- 外部组件面板 (内容同之前) -->
+            <!-- 外部组件面板 -->
             <div class="panel" id="panelExternalComponents" style="display:none;">
                 <div class="panel-header" onclick="togglePanel('externalContent')">外部组件</div>
                 <div id="externalContent" class="panel-content">
                     <div class="row"><div class="label-hint"><strong>源类型</strong></div><select id="ext_source_type"><option value="git">git</option><option value="local">local</option></select></div>
-                    <div id="gitSettings"><div class="row"><div class="label-hint"><strong>Git 仓库地址</strong></div><input id="ext_repo_url" value="https://github.com/txhtxh11/AIESP"></div><div class="row"><div class="label-hint"><strong>子路径</strong></div><input id="ext_path" value="homekit-esp8266"></div><div class="row"><div class="label-hint"><strong>刷新间隔 (refresh) · 例如 1d,12h,never</strong></div><div class="time-input-group"><input id="ext_refresh" value="7d"><button type="button" class="never-btn" onclick="setNeverRefresh()">never</button></div></div></div>
+                    <div id="gitSettings"><div class="row"><div class="label-hint"><strong>Git 仓库地址</strong></div><input id="ext_repo_url" value="https://github.com/txhtxh11/AIESP"></div><div class="row"><div class="label-hint"><strong>子路径 (留空则不生成path行)</strong></div><input id="ext_path" value="homekit-esp8266"></div><div class="row"><div class="label-hint"><strong>刷新间隔 (refresh) · 例如 1d,12h,never</strong></div><div class="time-input-group"><input id="ext_refresh" value="7d"><button type="button" class="never-btn" onclick="setNeverRefresh()">never</button></div></div></div>
                     <div id="localSettings" style="display:none;"><div class="row"><div class="label-hint"><strong>本地组件目录</strong></div><input id="ext_local_path" value="/config/my_components"></div></div>
                     <div class="row"><div class="label-hint"><strong>组件列表</strong> · 逗号分隔</div><input id="ext_components" value="homekit"></div>
                 </div>
             </div>
 
-            <!-- 辅助功能面板 (内容同之前) -->
+            <!-- 辅助功能面板 -->
             <div class="panel" id="panelAux" style="display:none;">
                 <div class="panel-header" onclick="togglePanel('auxContent')">辅助功能</div>
                 <div id="auxContent" class="panel-content">
@@ -524,7 +530,15 @@
                 </div>
             </div>
             
-            <div class="info-note">实时同步 | 支持多开关、多按键、自定义外部组件 | 按键可选同步HomeKit | Flash大小仅对ESP8266有效</div>
+            <div class="info-note">
+                <span>实时同步 | 多开关/按键 | 外部组件子路径留空则不生成path行</span>
+                <!-- 下拉菜单样式，保持与前一版一致，但复制功能已修复 -->
+                <select id="cmpowerActionSelect" class="cmpower-select">
+                    <option value="" disabled selected>⚡ cmpower w1</option>
+                    <option value="copy">📋 复制YAML</option>
+                    <option value="download">💾 下载YAML</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -778,14 +792,18 @@
         if(hkEnable){
             yaml += `external_components:\n  - source:\n`;
             if(extType==='git'){
-                const repo = document.getElementById('ext_repo_url')?.value.trim()||'https://github.com/txhtxh11/AIESP';
-                const path = document.getElementById('ext_path')?.value.trim()||'homekit-esp8266';
+                let repo = document.getElementById('ext_repo_url')?.value.trim();
+                if (!repo) repo = 'https://github.com/txhtxh11/AIESP';
+                const pathRaw = document.getElementById('ext_path')?.value.trim();
                 yaml += `      type: git\n      url: ${repo}\n`;
-                if(path) yaml += `      path: ${path}\n`;
+                if (pathRaw && pathRaw !== "") {
+                    yaml += `      path: ${pathRaw}\n`;
+                }
                 yaml += `    refresh: ${extRefresh}\n`;
             } else {
                 const localPath = document.getElementById('ext_local_path')?.value.trim()||'/config/my_components';
                 yaml += `      type: local\n      path: ${localPath}\n`;
+                yaml += `    refresh: 0s\n`;
             }
             const comps = extComps.split(',').map(s=>s.trim()).filter(s=>s);
             yaml += `    components: [${comps.length?comps.join(', '):'homekit'}]\n\n`;
@@ -813,7 +831,6 @@
         toggleExternalSettings(); toggleWebSettings(); toggleHomeKitSettings(); toggleBoardCustom();
     }
     
-    // 修复后的复制按钮：先尝试 Clipboard API，失败则回退到 execCommand
     function setupCopy(){
         document.getElementById('copyBtn').addEventListener('click', async () => {
             const preElem = document.getElementById('yaml_preview');
@@ -822,7 +839,6 @@
                 alert('暂无有效配置，请稍后');
                 return;
             }
-            // 方法1: 尝试 Clipboard API
             if (navigator.clipboard && window.isSecureContext) {
                 try {
                     await navigator.clipboard.writeText(txt);
@@ -832,7 +848,6 @@
                     console.warn('Clipboard API 失败，回退到 execCommand', err);
                 }
             }
-            // 方法2: 回退到 document.execCommand
             const ta = document.createElement('textarea');
             ta.value = txt;
             ta.style.position = 'fixed';
@@ -869,6 +884,395 @@
             URL.revokeObjectURL(url);
         });
     }
+
+    // ========== CMPOWER W1 固定配置内容 (与之前完全一致) ==========
+    function getCmpowerYamlContent() {
+        return `# ESPHome + HomeKit + SY7T609 配置 (CMPOWER W1 优化版)
+# 生成时间: ${new Date().toLocaleString()}
+
+substitutions:
+  node_name: "powerboard-homekit"
+  node_name_friendly: "🔌 智能插排 (Smart Power Strip)"
+  node_project_name: "CMCC.CMPOWER-W1"
+  node_project_version: "v6.0.1"
+  node_build_min_version: "2026.1.0"
+  device_mid: "ESP32_POWERBOARD_HOMEKIT"
+
+  # GPIO 物理引脚定义
+  button_pin: GPIO4 
+  relay_master_pin: GPIO0
+  relay_slave_pin: GPIO12
+  relay_enable_pin: GPIO15
+  led_blue_pin: GPIO16
+  led_red_pin: GPIO14
+  led_white_pin: GPIO5
+
+safe_mode:
+  reboot_timeout: 5min
+
+http_request:
+  verify_ssl: false
+
+esphome:
+  name: \${node_name}
+  friendly_name: \${node_name_friendly}
+  project:
+    name: \${node_project_name}
+    version: \${node_project_version}
+  name_add_mac_suffix: true
+  min_version: \${node_build_min_version}
+  
+  platformio_options:
+    board_build.f_cpu: 160000000L
+    board_build.ldscript: eagle.flash.4m1m.ld
+    build_flags:
+      - "-D HOMEKIT_LOG_LEVEL=0 -D ARDUINO_HOMEKIT_LOWROM"
+  on_boot:
+    priority: 800
+    then:
+      - lambda: |-
+          WiFi.setPhyMode(WIFI_PHY_MODE_11G);
+          
+esp8266:
+  board: esp12e
+  restore_from_flash: true
+
+preferences:
+  flash_write_interval: 5min
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/txhtxh11/cmpower
+    components: [homekit, sy7t609]
+
+wifi:
+  min_auth_mode: WPA
+  reboot_timeout: 0s
+  on_connect:
+    - light.turn_on: id_led_blue
+  on_disconnect:
+    - light.turn_off: id_led_blue
+  ap:
+    ssid: "CMPOWER-W1"
+    password: ""
+    
+captive_portal:
+
+web_server:
+  port: 80
+  version: 1
+
+api:
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+
+time:
+  - platform: homeassistant
+    id: id_homeassistant_time
+    timezone: "Asia/Shanghai"
+
+uart:
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 9600
+
+globals:
+  - id: id_energy_counter_persist
+    type: float
+    restore_value: yes
+    initial_value: '0.0'
+  - id: id_energy_counter_lastvalue
+    type: float
+    restore_value: no
+    initial_value: '0.0'
+
+text_sensor:
+  - platform: wifi_info
+    ssid:
+      name: SSID 名称
+      icon: "mdi:signal-variant"
+    ip_address:
+      name: IP 地址
+      icon: "mdi:ip-network"
+    mac_address:
+      name: Mac 地址
+      icon: "mdi:wifi-marker"
+  - platform: template
+    name: "HomeKit 配对码"
+    id: id_homekit_setup_code
+    icon: "mdi:qrcode"
+    update_interval: 1h
+    lambda: |-
+      std::string code = id(my_hk)->get_setup_code();
+      if (code.empty()) {
+        return {"等待生成"};
+      }
+      return {code};
+
+output:
+  - platform: gpio
+    id: id_pin_trigger_relay_enable
+    pin:
+      number: \${relay_enable_pin}
+      inverted: true
+  - platform: gpio
+    id: id_pin_relay_master
+    pin:
+      number: \${relay_master_pin}
+      inverted: true
+  - platform: gpio
+    id: id_pin_relay_slave
+    pin:
+      number: \${relay_slave_pin}
+      inverted: true
+  - platform: esp8266_pwm
+    id: id_pin_led_white
+    pin:
+      number: \${led_white_pin}
+      inverted: true
+  - platform: esp8266_pwm
+    id: id_pin_led_blue
+    pin:
+      number: \${led_blue_pin}
+      inverted: true
+  - platform: esp8266_pwm
+    id: id_pin_led_red
+    pin:
+      number: \${led_red_pin}
+      inverted: true
+
+light:
+  - platform: monochromatic
+    name: "⚪ 分路指示灯 (Slave Indicator)"
+    id: id_led_white
+    output: id_pin_led_white
+    internal: true
+  - platform: monochromatic
+    name: "🔵 WIFI状态灯 (WiFi Status)"
+    id: id_led_blue
+    output: id_pin_led_blue
+    internal: true
+  - platform: status_led
+    name: "🔴 系统状态灯 (System Status)"
+    id: id_led_red
+    output: id_pin_led_red
+    internal: true
+
+button:
+  - platform: template
+    name: "重置 HomeKit"
+    on_press:
+      - homekit.reset_storage: my_hk
+  - platform: output
+    id: id_trigger_relay_enable
+    output: id_pin_trigger_relay_enable
+    duration: 10ms
+    internal: true
+  - platform: template
+    name: "♻️ 重置累计电量 (Reset Energy)"
+    entity_category: config
+    on_press:
+      then:
+        - globals.set:
+            id: id_energy_counter_persist
+            value: '0.0'
+        - sy7t609.reset_energy: id_sensor_sy7t609
+
+switch:
+  - platform: template
+    name: "⚡总开关 Master Switch"
+    id: id_relay_master_logic
+    lambda: "return id(id_relay_master_real).state;"
+    turn_on_action:
+      - switch.turn_on: id_relay_master_real
+    turn_off_action:
+      - switch.turn_off: id_relay_master_real
+
+  - platform: template
+    name: "🔌分路开关 Slave Switch"
+    id: id_relay_slave_logic
+    lambda: "return id(id_relay_master_real).state && id(id_relay_slave_real).state;"
+    turn_on_action:
+      - switch.turn_on: id_relay_slave_real
+      - switch.turn_on: id_relay_master_real
+    turn_off_action:
+      - switch.turn_off: id_relay_slave_real
+
+  - platform: output
+    id: id_relay_master_real
+    output: id_pin_relay_master
+    internal: true
+    on_turn_on:
+      - button.press: id_trigger_relay_enable
+      - lambda: "if(id(id_relay_slave_real).state) id(id_led_white).turn_on().perform();"
+    on_turn_off:
+      - button.press: id_trigger_relay_enable
+      - lambda: "id(id_led_white).turn_off().perform();"
+
+  - platform: output
+    id: id_relay_slave_real
+    output: id_pin_relay_slave
+    internal: true
+    on_turn_on:
+      - button.press: id_trigger_relay_enable
+      - lambda: "if(id(id_relay_master_real).state) id(id_led_white).turn_on().perform();"
+    on_turn_off:
+      - button.press: id_trigger_relay_enable
+      - lambda: "id(id_led_white).turn_off().perform();"
+
+  - platform: restart
+    name: "🔄 系统重启 (System Restart)"
+  
+  - platform: factory_reset
+    name: "🏭 恢复出厂设置 (Factory Reset)"
+    id: id_factoryreset
+
+sensor:
+  - platform: sy7t609
+    id: id_sensor_sy7t609
+    voltage:
+      name: "⚡ 电压 (Voltage)"
+    current:
+      name: "🌊 电流 (Current)"
+    power:
+      name: "💡 功率 (Power)"
+      id: id_sensor_power
+    energy:
+      id: id_sensor_energy
+      internal: true
+    update_interval: 3s
+    reactive_power:
+      name: "👻 无功功率 (Reactive Power)"
+      id: id_sensor_reactive_power
+    power_factor:
+      name: "📊 功率因数 (Power Factor)"
+      id: id_sensor_power_factor
+    frequency:
+      name: "📈 频率 (Frequency)"
+      id: id_sensor_frequency
+    chip_temperature:
+      name: "🌡️ 芯片温度 (Chip Temp)"
+  - platform: total_daily_energy
+    name: "📅 今日用电量 (Daily Energy)"
+    id: id_total_daily_energy_median
+    power_id: id_sensor_power
+    accuracy_decimals: 3
+    unit_of_measurement: kWh
+    restore: true
+    filters:
+      - multiply: 0.001
+
+  - platform: copy
+    name: "🔋 累计电量 (Total Energy)"
+    id: id_sensor_energy_counter_persist
+    source_id: id_sensor_energy
+    accuracy_decimals: 3
+    unit_of_measurement: kWh
+    filters:
+      - lambda: |-
+          if(x < id(id_energy_counter_persist)) {
+            float delta = x - id(id_energy_counter_lastvalue);
+            id(id_energy_counter_persist) += delta;
+            id(id_energy_counter_lastvalue) = x;
+          } else {
+            id(id_energy_counter_persist) = x;
+          }
+          return id(id_energy_counter_persist);
+      - multiply: 0.001
+
+binary_sensor:
+  - platform: gpio
+    id: id_power_key
+    internal: true
+    pin:
+      number: \${button_pin}
+      inverted: true
+      mode: INPUT_PULLUP
+    on_multi_click:
+      - timing:
+          - ON for at most 0.3s
+          - OFF for at least 0.2s
+        then:
+          - switch.toggle: id_relay_slave_logic
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at most 0.5s
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - switch.toggle: id_relay_master_logic
+      - timing:
+          - ON for at least 5s
+        then:
+          - switch.turn_on: id_factoryreset
+
+homekit:
+  id: my_hk
+  setup_code: "111-11-111"
+  switches:
+    - id_relay_slave_logic
+    - id_relay_master_logic
+
+# ========== 配置结束 ==========`;
+    }
+
+    // 修复：完全使用 execCommand 复制，避免 Clipboard API 权限策略问题
+    function copyCmpowerYaml() {
+        const content = getCmpowerYamlContent();
+        // 创建临时 textarea 元素
+        const textarea = document.createElement('textarea');
+        textarea.value = content;
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, content.length); // 兼容 iOS
+        let success = false;
+        try {
+            success = document.execCommand('copy');
+        } catch (err) {
+            console.error('execCommand 复制失败:', err);
+        }
+        document.body.removeChild(textarea);
+        if (success) {
+            alert('CMPOWER W1 YAML 已复制到剪贴板');
+        } else {
+            alert('复制失败，请手动选择复制');
+        }
+    }
+
+    function downloadCmpowerYaml() {
+        const content = getCmpowerYamlContent();
+        const blob = new Blob([content], {type: 'text/yaml'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'cmpower_w1_optimized.yaml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 下拉菜单事件绑定（修复复制功能）
+    function setupCmpowerDropdown() {
+        const selectEl = document.getElementById('cmpowerActionSelect');
+        if (!selectEl) return;
+        selectEl.addEventListener('change', (e) => {
+            const val = e.target.value;
+            if (val === 'copy') {
+                copyCmpowerYaml();
+            } else if (val === 'download') {
+                downloadCmpowerYaml();
+            }
+            // 重置选择框，以便下次可以再次选择同一选项
+            selectEl.value = '';
+        });
+    }
     
     function initDemo(){
         if(controllers.length===0) controllers.push({id:'switch_onboard_led',name:'板载LED',type:'switch',gpio:'2',invert:'true',init_level:'ALWAYS_OFF'});
@@ -887,7 +1291,7 @@
                 homekit_enabled: true
             });
         }
-        renderControllersUI(); renderButtonsUI(); bindGlobalEvents(); renderYAML(); setupCopy(); setupDownload();
+        renderControllersUI(); renderButtonsUI(); bindGlobalEvents(); renderYAML(); setupCopy(); setupDownload(); setupCmpowerDropdown();
         document.querySelectorAll('.panel').forEach(p=>{ p.classList.remove('active'); const c=p.querySelector('.panel-content'); if(c) c.style.display='none'; });
     }
     
