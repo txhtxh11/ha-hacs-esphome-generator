@@ -397,68 +397,6 @@
         background: var(--btn-hover);
         border-color: var(--input-focus);
     }
-    /* 手动复制模态框样式 */
-    .copy-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.85);
-        z-index: 20000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(4px);
-    }
-    .copy-modal-content {
-        background: var(--bg-panel);
-        border-radius: 20px;
-        max-width: 95%;
-        width: 500px;
-        max-height: 80%;
-        overflow: auto;
-        padding: 20px;
-        box-shadow: 0 20px 35px rgba(0,0,0,0.5);
-        border: 1px solid var(--border);
-    }
-    .copy-modal-text {
-        background: var(--pre-bg);
-        border: 1px solid var(--pre-border);
-        border-radius: 12px;
-        padding: 16px;
-        font-family: monospace;
-        font-size: 12px;
-        white-space: pre-wrap;
-        word-break: break-all;
-        max-height: 55vh;
-        overflow: auto;
-        margin: 16px 0;
-        color: var(--text-primary);
-        user-select: text;
-        -webkit-user-select: text;
-    }
-    .copy-modal-buttons {
-        display: flex;
-        gap: 12px;
-        justify-content: flex-end;
-    }
-    .copy-modal-buttons button {
-        background: var(--btn-bg);
-        border: 1px solid var(--btn-border);
-        color: var(--text-primary);
-        padding: 8px 16px;
-        border-radius: 30px;
-        cursor: pointer;
-    }
-    .copy-modal-buttons button.primary {
-        background: var(--input-focus);
-        border-color: var(--input-focus);
-        color: white;
-    }
-    .copy-modal-buttons button:hover {
-        background: var(--btn-hover);
-    }
 </style>
 </head>
 <body data-theme="dark">
@@ -1282,121 +1220,39 @@ homekit:
 # ========== 配置结束 ==========`;
     }
 
-    // 显示手动复制模态框（手机浏览器友好）
-    function showManualCopyModal(content) {
-        const existing = document.querySelector('.copy-modal-overlay');
-        if (existing) existing.remove();
-        
-        const overlay = document.createElement('div');
-        overlay.className = 'copy-modal-overlay';
-        const modalDiv = document.createElement('div');
-        modalDiv.className = 'copy-modal-content';
-        
-        const title = document.createElement('h3');
-        title.textContent = '复制 YAML 配置';
-        title.style.margin = '0 0 12px 0';
-        title.style.color = 'var(--text-primary)';
-        modalDiv.appendChild(title);
-        
-        const hint = document.createElement('p');
-        hint.textContent = '由于浏览器安全限制，请长按下方文本区域，选择“全选”后复制：';
-        hint.style.fontSize = '13px';
-        hint.style.marginBottom = '8px';
-        hint.style.color = 'var(--text-secondary)';
-        modalDiv.appendChild(hint);
-        
-        const textArea = document.createElement('div');
-        textArea.className = 'copy-modal-text';
-        textArea.innerText = content;
-        modalDiv.appendChild(textArea);
-        
-        const btnGroup = document.createElement('div');
-        btnGroup.className = 'copy-modal-buttons';
-        
-        const copyBtn = document.createElement('button');
-        copyBtn.textContent = '一键复制（尝试）';
-        copyBtn.className = 'primary';
-        copyBtn.onclick = async () => {
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(content);
-                    alert('复制成功！');
-                    overlay.remove();
-                } else {
-                    const ta = document.createElement('textarea');
-                    ta.value = content;
-                    ta.style.position = 'fixed';
-                    ta.style.left = '-9999px';
-                    document.body.appendChild(ta);
-                    ta.select();
-                    const success = document.execCommand('copy');
-                    document.body.removeChild(ta);
-                    if (success) {
-                        alert('复制成功！');
-                        overlay.remove();
-                    } else {
-                        alert('一键复制失败，请使用长按手动复制');
-                    }
-                }
-            } catch(e) {
-                alert('复制失败，请使用长按手动复制');
-            }
-        };
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.textContent = '关闭';
-        closeBtn.onclick = () => overlay.remove();
-        
-        btnGroup.appendChild(copyBtn);
-        btnGroup.appendChild(closeBtn);
-        modalDiv.appendChild(btnGroup);
-        overlay.appendChild(modalDiv);
-        document.body.appendChild(overlay);
-    }
-
-    // 复制按钮逻辑：优先尝试自动复制，失败则显示手动模态框
-    function handleCmCopy() {
+    // cm复制按钮：与右侧“复制”按钮行为完全一致
+    async function handleCmCopy() {
         const content = getCmpowerYamlContent();
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
-        if (isMobile) {
-            // 手机浏览器：直接显示手动复制模态框（100%可靠）
-            showManualCopyModal(content);
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(content);
+                alert('已复制');
+                return;
+            } catch (err) {
+                console.warn('Clipboard API 失败', err);
+            }
+        }
+        // fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = content;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '0';
+        textarea.setAttribute('readonly', '');
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, content.length);
+        let success = false;
+        try {
+            success = document.execCommand('copy');
+        } catch (err) {
+            console.error('execCommand 失败', err);
+        }
+        document.body.removeChild(textarea);
+        if (success) {
+            alert('已复制');
         } else {
-            // 电脑端：尝试自动复制
-            (async () => {
-                if (navigator.clipboard && window.isSecureContext) {
-                    try {
-                        await navigator.clipboard.writeText(content);
-                        alert('cm复制成功');
-                        return;
-                    } catch (err) {
-                        console.warn('Clipboard API 失败', err);
-                    }
-                }
-                const textarea = document.createElement('textarea');
-                textarea.value = content;
-                textarea.style.position = 'fixed';
-                textarea.style.left = '-9999px';
-                textarea.style.top = '0';
-                textarea.setAttribute('readonly', '');
-                document.body.appendChild(textarea);
-                textarea.select();
-                textarea.setSelectionRange(0, content.length);
-                let success = false;
-                try {
-                    success = document.execCommand('copy');
-                } catch (err) {
-                    console.error('execCommand 失败', err);
-                }
-                document.body.removeChild(textarea);
-                if (success) {
-                    alert('cm复制成功');
-                } else {
-                    alert('自动复制失败，已打开手动复制窗口');
-                    showManualCopyModal(content);
-                }
-            })();
+            alert('复制失败，请手动复制');
         }
     }
 
