@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>ESP+HOMEKIT生成 - TXH</title>
 <style>
-    /* ---------- 主题变量 (与之前完全相同) ---------- */
+    /* ---------- 主题变量 (与原版一致) ---------- */
     :root {
         --bg-body: #000;
         --bg-panel: #0b0d10;
@@ -397,6 +397,64 @@
         background: var(--btn-hover);
         border-color: var(--input-focus);
     }
+    /* ========== 新增：HomeKit 实体勾选列表样式 ========== */
+    .hk-entity-list {
+        max-height: 240px;
+        overflow-y: auto;
+        background: var(--bg-card);
+        border-radius: 12px;
+        border: 1px solid var(--border-light);
+        padding: 10px;
+        margin: 12px 0;
+    }
+    .hk-entity-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--border-light);
+        font-size: 13px;
+        text-align: left;
+    }
+    .hk-entity-item input {
+        width: 16px;
+        margin: 0;
+        flex-shrink: 0;
+    }
+    .hk-entity-item label {
+        flex: 1;
+        cursor: pointer;
+        font-family: monospace;
+        white-space: nowrap;
+        overflow-x: auto;
+        text-align: left;
+    }
+    .hk-entity-type {
+        font-size: 10px;
+        background: var(--badge-bg);
+        padding: 2px 8px;
+        border-radius: 20px;
+        width: 70px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    /* 高级联动区域 */
+    .advanced-settings {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+    }
+    .inline-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 8px 0;
+    }
+    .inline-checkbox input { width: auto; transform: scale(1.2); margin: 0; }
+    .inline-checkbox label {
+        font-size: 11px;
+    }
 </style>
 </head>
 <body data-theme="dark">
@@ -468,21 +526,40 @@
                 </div>
             </div>
 
-            <!-- 控制器管理面板 -->
+            <!-- ========== 控制器管理面板 (增强：开关/灯联动、WiFi指示灯) ========== -->
             <div class="panel" id="panelMultiCtrl">
                 <div class="panel-header" onclick="togglePanel('multiCtrlContent')">控制器管理</div>
                 <div id="multiCtrlContent" class="panel-content">
                     <div class="row"><div class="label-hint"><strong>名称</strong></div><input id="new_ctrl_name" value="板载LED"></div>
-                    <div class="row"><div class="label-hint"><strong>类型 (HomeKit 角色)</strong></div><select id="new_ctrl_type"><option value="switch">开关 Switch</option><option value="light">灯 Light</option><option value="socket">插座 Outlet</option></select></div>
+                    <div class="row"><div class="label-hint"><strong>类型 (HomeKit 角色)</strong></div><select id="new_ctrl_type" onchange="toggleCtrlAdvanced()">
+                        <option value="switch">开关 Switch</option>
+                        <option value="light">灯 Light</option>
+                        <option value="socket">插座 Outlet</option>
+                    </select></div>
                     <div class="row"><div class="label-hint"><strong>GPIO 引脚</strong></div><input id="new_ctrl_gpio" value="2"></div>
-                    <div class="row"><div class="label-hint"><strong>反向输出</strong></div><select id="new_ctrl_invert"><option value="true">反向</option><option value="false">常规</option></select></div>
+                    <div class="row"><div class="label-hint"><strong>反向输出</strong></div><select id="new_ctrl_invert"><option value="false">常规</option><option value="true">反向</option></select></div>
                     <div class="row"><div class="label-hint"><strong>初始电平</strong></div><select id="new_ctrl_init_level"><option value="ALWAYS_ON">高电平</option><option value="ALWAYS_OFF" selected>低电平</option></select></div>
+                    
+                    <!-- 通用高级联动 (开关和灯都显示) -->
+                    <div id="ctrlAdvancedSettings" class="advanced-settings" style="display:block;">
+                        <div class="label-hint" id="ctrlAdvTitle">高级联动 (可选)</div>
+                        <div class="inline-checkbox">
+                            <input type="checkbox" id="ctrl_wifi_indicator">
+                            <label>WiFi指示灯:断网亮，联网灭</label>
+                        </div>
+                        <div class="row">
+                            <div class="label-hint" id="ctrlFollowLabel">联动目标 (打开时打开它，关闭时关闭它)</div>
+                            <select id="ctrl_follow_target">
+                                <option value="">无联动</option>
+                            </select>
+                        </div>
+                    </div>
                     <button class="btn" onclick="addController()">添加此控制器</button>
                     <div id="ctrl_list_container" style="margin-top: 12px;"></div>
                 </div>
             </div>
 
-            <!-- 物理按键面板 -->
+            <!-- ========== 物理按键面板 (增强：控制开关或灯) ========== -->
             <div class="panel" id="panelMultiBtn">
                 <div class="panel-header" onclick="togglePanel('multiBtnContent')">物理按键</div>
                 <div id="multiBtnContent" class="panel-content">
@@ -491,28 +568,38 @@
                     <div class="row"><select id="new_btn_pullup"><option value="true">启用内部上拉</option><option value="false">无上拉</option></select></div>
                     <div class="row"><select id="new_btn_invert"><option value="true">低电平触发</option><option value="false">高电平触发</option></select></div>
                     <div class="row"><div class="label-hint">单击时间范围 (ms)</div><div class="range"><input id="new_btn_min" value="50"><input id="new_btn_max" value="800"></div></div>
-                    <div class="row"><div class="label-hint">控制目标</div><select id="btn_target_select"><option value="__disabled__">不启用</option></select></div>
-                    <div class="row"><select id="new_btn_action"><option value="toggle">切换 Toggle</option><option value="turn_on">打开 On</option><option value="turn_off">关闭 Off</option></select></div>
+                    <div class="row"><div class="label-hint">控制目标 (开关或灯)</div><select id="btn_target_select"><option value="__disabled__">不启用</option></select></div>
+                    <div class="row"><select id="new_btn_action">
+                        <option value="toggle">切换 Toggle (switch/light)</option>
+                        <option value="turn_on">打开 On</option>
+                        <option value="turn_off">关闭 Off</option>
+                    </select></div>
                     <div class="row"><div class="label-hint">映射到HomeKit</div><select id="new_btn_homekit"><option value="true">开启</option><option value="false">关闭</option></select></div>
                     <button class="btn" onclick="addButtonMapping()">添加按键</button>
                     <div id="btn_list_container" style="margin-top: 12px;"></div>
                 </div>
             </div>
 
-            <!-- HomeKit配置面板 -->
+            <!-- ========== HomeKit配置面板 (勾选实体) ========== -->
             <div class="panel" id="panelHomekit">
                 <div class="panel-header" onclick="togglePanel('hkContent')">HomeKit配置</div>
                 <div id="hkContent" class="panel-content">
                     <div class="row"><div class="label-hint"><strong>启用 HomeKit 桥接</strong></div><select id="hk_enable" onchange="toggleHomeKitSettings()"><option value="1">启用 HomeKit</option><option value="0">关闭</option></select></div>
-                    <div id="homekitDetails" style="display:none;">
+                    <div id="homekitDetails" style="display:block;">
                         <div class="row"><div class="label-hint"><strong>HomeKit 组件 ID</strong> · 支持下划线</div><input id="hk_id" value="my_hk"></div>
                         <div class="row"><div class="label-hint"><strong>配对码</strong> · 111-22-333</div><input id="hk_code" value="111-22-333"></div>
+                        <div class="row">
+                            <div class="label-hint"><strong>选择要添加到 HomeKit 的实体 (手动勾选)</strong></div>
+                            <div id="hkEntityListContainer" class="hk-entity-list">
+                                <div class="helper-text" style="padding: 8px;">暂无实体，请先添加控制器或物理按键</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 外部组件面板 -->
-            <div class="panel" id="panelExternalComponents" style="display:none;">
+            <!-- 外部组件面板 (原样保留) -->
+            <div class="panel" id="panelExternalComponents" style="display:block;">
                 <div class="panel-header" onclick="togglePanel('externalContent')">外部组件</div>
                 <div id="externalContent" class="panel-content">
                     <div class="row"><div class="label-hint"><strong>源类型</strong></div><select id="ext_source_type"><option value="git">git</option><option value="local">local</option></select></div>
@@ -522,19 +609,18 @@
                 </div>
             </div>
 
-            <!-- 辅助功能面板 -->
-            <div class="panel" id="panelAux" style="display:none;">
+            <!-- 辅助功能面板 (原样保留) -->
+            <div class="panel" id="panelAux" style="display:block;">
                 <div class="panel-header" onclick="togglePanel('auxContent')">辅助功能</div>
                 <div id="auxContent" class="panel-content">
                     <div class="row"><select id="aux_reset_btn"><option value="1">添加重置 HomeKit 按钮</option><option value="0">不添加</option></select></div>
                     <div class="row"><select id="aux_code_sensor"><option value="1">显示配对码文本传感器</option><option value="0">隐藏</option></select></div>
-                    <div class="row" id="sensorUpdateRow"><div class="label-hint"><strong>文本传感器更新间隔 · 12h,30min,never</strong></div><div class="time-input-group"><input id="sensor_update_interval" value="12h"><button type="button" class="never-btn" onclick="setNeverUpdateInterval()">never</button></div><div class="helper-text">never 表示不主动更新，仅在启动时读取一次。</div></div>
+                    <div class="row" id="sensorUpdateRow"><div class="label-hint"><strong>文本传感器更新间隔 · 12h,30min,never</strong></div><div class="time-input-group"><input id="sensor_update_interval" value="12h"><button type="button" class="never-btn" onclick="setNeverUpdateInterval()">never</button></div></div>
                 </div>
             </div>
             
             <div class="info-note">
-                <span>实时同步 | 多开关/按键 | 外部组件子路径留空则不生成path行</span>
-                <!-- 改为两个独立按钮，无 emoji -->
+                <span>实时同步 | 开关/灯均支持WiFi指示灯和联动 | HomeKit实体手动勾选</span>
                 <div class="cm-button-group">
                     <button id="cmCopyBtn" class="cm-button">cm复制</button>
                     <button id="cmDownloadBtn" class="cm-button">cm下载</button>
@@ -562,6 +648,7 @@
 </div>
 
 <script>
+    // ========== 以下为原有代码，cm 复制/下载 部分保持不变 ==========
     // 自定义链接存储
     let compileUrl = localStorage.getItem('esphome_compile_url') || 'https://esphomeonlinecompiler.com/';
     let flashUrl = localStorage.getItem('esphome_flash_url') || 'https://web.esphome.io/';
@@ -594,7 +681,7 @@
     document.getElementById('editCompileUrl').addEventListener('click', editCompile);
     document.getElementById('editFlashUrl').addEventListener('click', editFlash);
     
-    // HomeKit 显隐
+    // HomeKit 显隐 (启停外部组件和辅助面板)
     function toggleHomeKitSettings() {
         const enable = document.getElementById('hk_enable').value === '1';
         const details = document.getElementById('homekitDetails');
@@ -609,7 +696,10 @@
     function setNeverRefresh() { document.getElementById('ext_refresh').value = 'never'; renderYAML(); }
     function setNeverUpdateInterval() { document.getElementById('sensor_update_interval').value = 'never'; renderYAML(); }
     
-    let controllers = [], buttons = [];
+    // ========== 新增通用数据结构 ==========
+    let controllers = [];      // {id, name, type, gpio, invert, init_level, wifiIndicator, followId}
+    let buttons = [];          // {id, name, gpio, pullup, invert, min_ms, max_ms, target_id, action, homekit_enabled}
+    
     function genId(p) { return `${p}_${Date.now()}_${Math.floor(Math.random()*10000)}`; }
     
     function toggleExternalSettings() {
@@ -624,19 +714,39 @@
         renderYAML();
     }
     
+    // 渲染控制器列表UI，同时更新联动下拉框、按键目标下拉和HomeKit实体列表
     function renderControllersUI() {
         const ctn = document.getElementById('ctrl_list_container');
         if(!ctn) return;
         if(controllers.length===0) ctn.innerHTML = '<div style="color: var(--text-muted); text-align:center; padding:8px;">暂无控制器</div>';
-        else ctn.innerHTML = controllers.map((c,i)=>`<div class="item"><span>${c.name} (${c.type==='light'?'灯':c.type==='socket'?'插座':'开关'} | GPIO${c.gpio} | ${c.init_level==='ALWAYS_ON'?'高':'低'})</span><button class="del" onclick="removeController(${i})">删除</button></div>`).join('');
+        else ctn.innerHTML = controllers.map((c,i)=>`<div class="item"><span>${c.name} (${c.type==='light'?'灯':c.type==='socket'?'插座':'开关'} | GPIO${c.gpio}${c.wifiIndicator? ' 🔵WiFi指示灯':''}${c.followId? ' 🔗联动':' '})</span><button class="del" onclick="removeController(${i})">删除</button></div>`).join('');
+        
+        // 更新联动下拉框 (所有控制器都可作为联动目标)
+        const followSelect = document.getElementById('ctrl_follow_target');
+        if(followSelect){
+            let opts = '<option value="">无联动</option>';
+            controllers.forEach(c => {
+                let typeLabel = c.type === 'light' ? '灯' : (c.type==='socket'?'插座':'开关');
+                opts += `<option value="${c.id}">${c.name} (${typeLabel})</option>`;
+            });
+            followSelect.innerHTML = opts;
+        }
+        
+        // 更新按键控制目标下拉 (开关和灯)
         const target = document.getElementById('btn_target_select');
         if(target){
             let opts = '<option value="__disabled__">不启用</option>';
-            controllers.forEach(c=>opts+=`<option value="${c.id}">${c.name} (GPIO${c.gpio})</option>`);
+            controllers.forEach(c => {
+                let typeLabel = c.type === 'light' ? '灯' : (c.type==='socket'?'插座':'开关');
+                opts += `<option value="${c.id}">${c.name} (${typeLabel})</option>`;
+            });
             target.innerHTML = opts;
         }
+        
+        renderHomeKitEntityList();
         renderYAML();
     }
+    
     function renderButtonsUI() {
         const ctn = document.getElementById('btn_list_container');
         if(!ctn) return;
@@ -650,24 +760,118 @@
             const hkBadge = b.homekit_enabled ? '<span class="badge">HomeKit同步</span>' : '<span class="badge badge-off">仅本地</span>';
             return `<div class="item"><span>${b.name} (GPIO${b.gpio}) → ${targetName} (${b.action}) ${hkBadge}</span><button class="del" onclick="removeButton(${i})">删除</button></div>`;
         }).join('');
+        renderHomeKitEntityList();
         renderYAML();
     }
+    
+    function renderHomeKitEntityList() {
+        const container = document.getElementById('hkEntityListContainer');
+        if(!container) return;
+        const allEntities = [];
+        controllers.forEach(ctrl => {
+            let typeName = ctrl.type === 'light' ? '灯' : (ctrl.type === 'socket' ? '插座' : '开关');
+            allEntities.push({id: ctrl.id, name: ctrl.name, type: ctrl.type, typeLabel: typeName});
+        });
+        buttons.forEach(btn => {
+            allEntities.push({id: btn.id, name: btn.name, type: 'binary_sensor', typeLabel: '按键'});
+        });
+        if(allEntities.length === 0) {
+            container.innerHTML = '<div class="helper-text" style="padding: 8px;">暂无实体，请先添加控制器或物理按键</div>';
+            return;
+        }
+        if(!window._hkCheckedIds) window._hkCheckedIds = new Set();
+        let html = '';
+        allEntities.forEach(ent => {
+            let checked = window._hkCheckedIds.has(ent.id) ? 'checked' : '';
+            html += `<div class="hk-entity-item">
+                        <input type="checkbox" class="hk-entity-checkbox" data-id="${ent.id}" data-type="${ent.type}" ${checked}>
+                        <label title="${ent.name}">${ent.name}</label>
+                        <span class="hk-entity-type">${ent.typeLabel}</span>
+                     </div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.hk-entity-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+                let id = cb.getAttribute('data-id');
+                if(cb.checked) window._hkCheckedIds.add(id);
+                else window._hkCheckedIds.delete(id);
+                renderYAML();
+            });
+        });
+    }
+    
     function addController(){
         let name = document.getElementById('new_ctrl_name').value.trim();
         if(!name) name = `ctrl_${document.getElementById('new_ctrl_gpio').value}`;
-        controllers.push({id:genId('sw'), name:name, type:document.getElementById('new_ctrl_type').value, gpio:document.getElementById('new_ctrl_gpio').value.trim()||'2', invert:document.getElementById('new_ctrl_invert').value, init_level:document.getElementById('new_ctrl_init_level').value});
+        let type = document.getElementById('new_ctrl_type').value;
+        let gpio = document.getElementById('new_ctrl_gpio').value.trim()||'2';
+        let invert = document.getElementById('new_ctrl_invert').value;
+        let init_level = document.getElementById('new_ctrl_init_level').value;
+        let wifiIndicator = false;
+        let followId = null;
+        if(type === 'switch' || type === 'light') {
+            wifiIndicator = document.getElementById('ctrl_wifi_indicator').checked;
+            followId = document.getElementById('ctrl_follow_target').value;
+            if(followId === '') followId = null;
+            // 防止自联动
+            if(followId && followId === document.getElementById('new_ctrl_gpio').value + '_' + type) followId = null;
+        }
+        controllers.push({
+            id: genId('dev'),
+            name: name,
+            type: type,
+            gpio: gpio,
+            invert: invert,
+            init_level: init_level,
+            wifiIndicator: wifiIndicator,
+            followId: followId
+        });
         renderControllersUI();
         document.getElementById('new_ctrl_name').value = '';
+        document.getElementById('ctrl_wifi_indicator').checked = false;
+        document.getElementById('ctrl_follow_target').value = '';
     }
     function removeController(i){ controllers.splice(i,1); buttons = buttons.filter(b=>b.target_id==='__disabled__' || controllers.some(c=>c.id===b.target_id)); renderControllersUI(); renderButtonsUI(); }
+    
     function addButtonMapping(){
-        buttons.push({id:genId('btn'), name:document.getElementById('new_btn_name').value.trim()||`btn_${document.getElementById('new_btn_gpio').value}`, gpio:document.getElementById('new_btn_gpio').value.trim()||'0', pullup:document.getElementById('new_btn_pullup').value, invert:document.getElementById('new_btn_invert').value, min_ms:document.getElementById('new_btn_min').value||'50', max_ms:document.getElementById('new_btn_max').value||'800', target_id:document.getElementById('btn_target_select').value, action:document.getElementById('new_btn_action').value, homekit_enabled:document.getElementById('new_btn_homekit').value==='true'});
+        let targetId = document.getElementById('btn_target_select').value;
+        let action = document.getElementById('new_btn_action').value;
+        buttons.push({
+            id: genId('btn'),
+            name: document.getElementById('new_btn_name').value.trim()||`btn_${document.getElementById('new_btn_gpio').value}`,
+            gpio: document.getElementById('new_btn_gpio').value.trim()||'0',
+            pullup: document.getElementById('new_btn_pullup').value,
+            invert: document.getElementById('new_btn_invert').value,
+            min_ms: document.getElementById('new_btn_min').value||'50',
+            max_ms: document.getElementById('new_btn_max').value||'800',
+            target_id: targetId,
+            action: action,
+            homekit_enabled: document.getElementById('new_btn_homekit').value==='true'
+        });
         renderButtonsUI();
         document.getElementById('new_btn_name').value=''; document.getElementById('new_btn_gpio').value='0';
     }
     function removeButton(i){ buttons.splice(i,1); renderButtonsUI(); }
     
-    // 开发板型号切换
+    // 辅助函数 (新增 t 联动显示切换)
+    function toggleCtrlAdvanced() {
+        const type = document.getElementById('new_ctrl_type').value;
+        const advDiv = document.getElementById('ctrlAdvancedSettings');
+        if(type === 'switch' || type === 'light') {
+            advDiv.style.display = 'block';
+            if(type === 'switch') {
+                document.getElementById('ctrlAdvTitle').innerText = '开关高级联动 (可选)';
+                document.getElementById('ctrlFollowLabel').innerHTML = '联动开关 (打开时打开它，关闭时关闭它)';
+            } else {
+                document.getElementById('ctrlAdvTitle').innerText = '灯高级联动 (可选)';
+                document.getElementById('ctrlFollowLabel').innerHTML = '联动目标 (打开时打开它，关闭时关闭它)';
+            }
+        } else {
+            advDiv.style.display = 'none';
+        }
+    }
+    
+    // 开发板型号切换 (原有)
     function toggleBoardCustom() {
         const select = document.getElementById('board_select');
         const customInput = document.getElementById('board_custom');
@@ -697,6 +901,7 @@
         renderYAML();
     }
     
+    // 核心渲染 YAML (支持开关/灯联动、WiFi指示灯、HomeKit勾选)
     function renderYAML(){
         const deviceName = (document.getElementById('device_name')?.value||'esp_homekit').toLowerCase().replace(/[^a-z0-9_]/g,'_');
         let board = '';
@@ -763,36 +968,82 @@
         yaml += `  reboot_timeout: ${wifiTimeout}\n  ap:\n    ssid: "${apSsid}"\n`;
         yaml += apPwd ? `    password: "${apPwd}"\n` : `    password: ""\n`;
         yaml += `\n`;
+        
+        // WiFi指示灯联动 (开关/灯)
+        const wifiControllers = controllers.filter(c => c.wifiIndicator === true);
+        if(wifiControllers.length) {
+            wifiControllers.forEach(ctrl => {
+                let domain = (ctrl.type === 'light') ? 'light' : 'switch';
+                yaml += `  on_disconnect:\n    then:\n      - ${domain}.turn_on: ${ctrl.id}\n  on_connect:\n    then:\n      - ${domain}.turn_off: ${ctrl.id}\n`;
+            });
+        }
+        yaml += `\n`;
         if(captive) yaml += `captive_portal:\n\n`;
         if(loggerEn) yaml += `logger:\n  level: ${loggerVal}\n\n`;
         if(apiEn) yaml += `api:\n  reboot_timeout: ${apiTimeout}\n\n`;
         if(otaEn) yaml += `ota:\n  - platform: esphome\n\n`;
         if(webEn) yaml += `web_server:\n  port: ${webPort}\n  version: ${webVer}\n\n`;
-        if(controllers.length){
+        
+        // 生成灯 (output + light)
+        const lights = controllers.filter(c => c.type === 'light');
+        const switches = controllers.filter(c => c.type === 'switch' || c.type === 'socket');
+        
+        if(lights.length) {
+            yaml += `output:\n`;
+            lights.forEach(light => {
+                let outId = `out_${light.id}`;
+                light._outputId = outId;
+                yaml += `  - platform: esp8266_pwm\n    id: ${outId}\n    pin: GPIO${light.gpio}\n`;
+                if(light.invert === 'true') yaml += `    inverted: true\n`;
+            });
+            yaml += `\nlight:\n`;
+            lights.forEach(light => {
+                yaml += `  - platform: monochromatic\n    name: "${light.name}"\n    id: ${light.id}\n    output: ${light._outputId}\n    restore_mode: RESTORE_DEFAULT_OFF\n`;
+                if(light.followId) {
+                    let target = controllers.find(c => c.id === light.followId);
+                    let targetDomain = (target && target.type === 'light') ? 'light' : 'switch';
+                    yaml += `    on_turn_on:\n      - ${targetDomain}.turn_on: ${light.followId}\n    on_turn_off:\n      - ${targetDomain}.turn_off: ${light.followId}\n`;
+                }
+                yaml += `\n`;
+            });
+        }
+        
+        if(switches.length) {
             yaml += `switch:\n`;
-            controllers.forEach(c=>{
-                yaml += `  - platform: gpio\n    pin: GPIO${c.gpio}\n    id: ${c.id}\n    name: "${c.name}"\n`;
-                if(c.invert==='true') yaml += `    inverted: true\n`;
-                yaml += `    restore_mode: ${c.init_level}\n`;
-                if(c.type==='light') yaml += `    icon: "mdi:lightbulb"\n`;
-                else if(c.type==='socket') yaml += `    icon: "mdi:power-socket-us"\n`;
+            switches.forEach(s => {
+                yaml += `  - platform: gpio\n    pin: GPIO${s.gpio}\n    id: ${s.id}\n    name: "${s.name}"\n`;
+                if(s.invert === 'true') yaml += `    inverted: true\n`;
+                yaml += `    restore_mode: ${s.init_level}\n`;
+                if(s.type === 'socket') yaml += `    icon: "mdi:power-socket-us"\n`;
+                if(s.followId) {
+                    let target = controllers.find(c => c.id === s.followId);
+                    let targetDomain = (target && target.type === 'light') ? 'light' : 'switch';
+                    yaml += `    on_turn_on:\n      - ${targetDomain}.turn_on: ${s.followId}\n    on_turn_off:\n      - ${targetDomain}.turn_off: ${s.followId}\n`;
+                }
                 yaml += `\n`;
             });
         }
-        if(buttons.length){
+        
+        if(buttons.length) {
             yaml += `binary_sensor:\n`;
-            buttons.forEach(b=>{
+            buttons.forEach(b => {
                 yaml += `  - platform: gpio\n    id: ${b.id}\n    pin:\n      number: GPIO${b.gpio}\n      mode: ${b.pullup==='true'?'INPUT_PULLUP':'INPUT'}\n`;
-                if(b.invert==='true') yaml += `      inverted: true\n`;
+                if(b.invert === 'true') yaml += `      inverted: true\n`;
                 yaml += `    name: "${b.name}"\n`;
-                if(b.target_id !== '__disabled__') yaml += `    on_click:\n      - min_length: ${b.min_ms}ms\n        max_length: ${b.max_ms}ms\n        then:\n          - switch.${b.action}: ${b.target_id}\n`;
-                else yaml += `    # 未绑定\n`;
+                if(b.target_id !== '__disabled__') {
+                    let targetCtrl = controllers.find(c => c.id === b.target_id);
+                    let domain = (targetCtrl && targetCtrl.type === 'light') ? 'light' : 'switch';
+                    yaml += `    on_click:\n      - min_length: ${b.min_ms}ms\n        max_length: ${b.max_ms}ms\n        then:\n          - ${domain}.${b.action}: ${b.target_id}\n`;
+                } else {
+                    yaml += `    # 未绑定\n`;
+                }
                 yaml += `\n`;
             });
         }
-        if(hkEnable){
+        
+        if(hkEnable && window._hkCheckedIds){
             yaml += `external_components:\n  - source:\n`;
-            if(extType==='git'){
+            if(extType === 'git'){
                 let repo = document.getElementById('ext_repo_url')?.value.trim();
                 if (!repo) repo = 'https://github.com/txhtxh11/AIESP';
                 const pathRaw = document.getElementById('ext_path')?.value.trim();
@@ -809,9 +1060,13 @@
             const comps = extComps.split(',').map(s=>s.trim()).filter(s=>s);
             yaml += `    components: [${comps.length?comps.join(', '):'homekit'}]\n\n`;
             yaml += `homekit:\n  id: ${hkId}\n  setup_code: "${hkCode}"\n`;
-            if(controllers.length){ yaml += `  switches:\n`; controllers.forEach(c=>yaml+=`    - ${c.id}\n`); }
-            const activeBtns = buttons.filter(b=>b.homekit_enabled===true);
-            if(activeBtns.length){ yaml += `  binary_sensors:\n`; activeBtns.forEach(b=>yaml+=`    - id: ${b.id}\n      type: contact\n`); }
+            const checkedControllers = controllers.filter(c => window._hkCheckedIds.has(c.id));
+            const checkedButtons = buttons.filter(b => window._hkCheckedIds.has(b.id));
+            const checkedSwitches = checkedControllers.filter(c => c.type === 'switch' || c.type === 'socket');
+            const checkedLights = checkedControllers.filter(c => c.type === 'light');
+            if(checkedSwitches.length) yaml += `  switches:\n` + checkedSwitches.map(s=>`    - ${s.id}\n`).join('');
+            if(checkedLights.length) yaml += `  lights:\n` + checkedLights.map(l=>`    - ${l.id}\n`).join('');
+            if(checkedButtons.length) yaml += `  binary_sensors:\n` + checkedButtons.map(b=>`    - id: ${b.id}\n      type: contact\n`).join('');
             yaml += `\n`;
             if(auxReset) yaml += `button:\n  - platform: template\n    name: "重置 HomeKit 配对"\n    id: reset_homekit_btn\n    icon: "mdi:restart-alert"\n    on_press:\n      - homekit.reset_storage: ${hkId}\n\n`;
             if(auxSensor) yaml += `text_sensor:\n  - platform: template\n    name: "HomeKit 配对码状态"\n    id: hk_setup_text_sensor\n    update_interval: ${sensorInterval}\n    lambda: |-\n      std::string code = id(${hkId})->get_setup_code();\n      if (code.empty()) return std::string("等待生成中");\n      return code;\n\n`;
@@ -866,27 +1121,63 @@
         });
     }
     
-    function setupDownload(){
-        document.getElementById('downloadBtn').addEventListener('click', () => {
-            const preElem = document.getElementById('yaml_preview');
-            const txt = preElem.textContent;
-            if (!txt || txt === '# 正在生成配置...') {
-                alert('暂无有效配置');
-                return;
+    // ========== 修复下载兼容性 - 适配飞牛APP ==========
+    function safeDownload(content, filename) {
+        const ua = navigator.userAgent;
+        const isFeiNiuWebView = /FN|FeiNiu|飞牛|WebView|wv/i.test(ua) || 
+                                /Android.*AppleWebKit.*Mobile.*Safari/.test(ua);
+        try {
+            if (isFeiNiuWebView) {
+                const dataUrl = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content);
+                const link = document.createElement('a');
+                link.href = dataUrl;
+                link.download = filename;
+                link.style.cssText = 'display:none;';
+                document.body.appendChild(link);
+                const clickEvent = new MouseEvent('click', { view: window, bubbles: true, cancelable: false });
+                link.dispatchEvent(clickEvent);
+                setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 100);
+                return true;
             }
-            const blob = new Blob([txt], {type: 'text/yaml'});
+            const blob = new Blob([content], {type: 'text/yaml;charset=utf-8'});
             const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${document.getElementById('device_name')?.value || 'esp_config'}.yaml`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => { document.body.removeChild(link); URL.revokeObjectURL(url); }, 100);
+            return true;
+        } catch (e) {
+            console.warn('下载失败:', e);
+            return false;
+        }
+    }
+    
+    // cm下载按钮 (保留原有)
+    function handleCmDownload() {
+        const content = getCmpowerYamlContent();
+        const filename = 'cmpower_w1_optimized.yaml';
+        safeDownload(content, filename);
+    }
+    
+    // 右侧下载按钮
+    function setupDownload() {
+        const downloadBtn = document.getElementById('downloadBtn');
+        if (!downloadBtn) return;
+        downloadBtn.addEventListener('click', () => {
+            const preElem = document.getElementById('yaml_preview');
+            let txt = preElem.textContent;
+            if (!txt || txt === '# 正在生成配置...') {
+                txt = getCmpowerYamlContent();
+            }
+            const filename = `${document.getElementById('device_name')?.value || 'esp_config'}.yaml`;
+            safeDownload(txt, filename);
         });
     }
 
-    // ========== CMPOWER W1 固定配置内容 ==========
+    // ========== CMPOWER W1 固定配置内容 (保持不变) ==========
     function getCmpowerYamlContent() {
         return `# ESPHome + HomeKit + SY7T609 配置 (CMPOWER W1 优化版)
 # 生成时间: ${new Date().toLocaleString()}
@@ -1220,7 +1511,7 @@ homekit:
 # ========== 配置结束 ==========`;
     }
 
-    // cm复制按钮：与右侧“复制”按钮行为完全一致
+    // cm复制按钮 (保留原有)
     async function handleCmCopy() {
         const content = getCmpowerYamlContent();
         if (navigator.clipboard && window.isSecureContext) {
@@ -1232,7 +1523,6 @@ homekit:
                 console.warn('Clipboard API 失败', err);
             }
         }
-        // fallback
         const textarea = document.createElement('textarea');
         textarea.value = content;
         textarea.style.position = 'fixed';
@@ -1256,20 +1546,7 @@ homekit:
         }
     }
 
-    function handleCmDownload() {
-        const content = getCmpowerYamlContent();
-        const blob = new Blob([content], {type: 'text/yaml'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'cmpower_w1_optimized.yaml';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    // 绑定两个按钮事件
+    // 绑定cm按钮 (保留原有)
     function setupCmButtons() {
         const copyBtn = document.getElementById('cmCopyBtn');
         const downloadBtn = document.getElementById('cmDownloadBtn');
@@ -1278,29 +1555,20 @@ homekit:
     }
     
     function initDemo(){
-        if(controllers.length===0) controllers.push({id:'switch_onboard_led',name:'板载LED',type:'switch',gpio:'2',invert:'true',init_level:'ALWAYS_OFF'});
-        if(buttons.length===0){
-            const defaultCtrl = controllers[0];
-            buttons.push({
-                id: genId('btn'),
-                name: 'Flash按键',
-                gpio: '0',
-                pullup: 'true',
-                invert: 'true',
-                min_ms: '50',
-                max_ms: '800',
-                target_id: defaultCtrl.id,
-                action: 'toggle',
-                homekit_enabled: true
-            });
-        }
-        renderControllersUI(); renderButtonsUI(); bindGlobalEvents(); renderYAML(); setupCopy(); setupDownload(); setupCmButtons();
+        // 不再预置任何控制器和按键
+        renderControllersUI();
+        renderButtonsUI();
+        bindGlobalEvents();
+        renderYAML();
+        setupCopy();
+        setupDownload();
+        setupCmButtons();   // 原有 cm 按钮绑定，保持不变
         document.querySelectorAll('.panel').forEach(p=>{ p.classList.remove('active'); const c=p.querySelector('.panel-content'); if(c) c.style.display='none'; });
     }
     
     window.addController=addController; window.removeController=removeController; window.addButtonMapping=addButtonMapping; window.removeButton=removeButton; window.togglePanel=togglePanel;
     window.setNeverTimeout=setNeverTimeout; window.setNeverRefresh=setNeverRefresh; window.setNeverUpdateInterval=setNeverUpdateInterval;
-    window.toggleHomeKitSettings=toggleHomeKitSettings;
+    window.toggleHomeKitSettings=toggleHomeKitSettings; window.toggleCtrlAdvanced = toggleCtrlAdvanced;
     
     document.addEventListener('DOMContentLoaded',()=>{ loadTheme(); initDemo(); });
 </script>
